@@ -53,7 +53,6 @@ def _identify_single(args: Namespace, audio, src_ext: str, output_dir: str) -> N
     process_identified_track(
         segment=audio,
         track_info=track_info,
-        label=Path(args.input).stem,
         output_dir=output_dir,
         src_ext=src_ext,
         download_lossless=args.download_lossless,
@@ -88,7 +87,6 @@ def _identify_vinyl(args: Namespace, audio, src_ext: str, output_dir: str) -> No
         process_identified_track(
             segment=seg,
             track_info=track_info or {},
-            label=label,
             output_dir=output_dir,
             src_ext=src_ext,
             download_lossless=args.download_lossless,

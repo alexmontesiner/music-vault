@@ -22,7 +22,6 @@ def _kwargs(**overrides) -> dict:
     defaults = dict(
         segment=_make_segment(),
         track_info=TRACK_INFO,
-        label="Track 01",
         output_dir="",          # overridden per test using tmp_path
         src_ext=".mp3",
         download_lossless=False,

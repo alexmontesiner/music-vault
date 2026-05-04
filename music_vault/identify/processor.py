@@ -15,7 +15,6 @@ def process_identified_track(
     *,
     segment,
     track_info: dict,
-    label: str,
     output_dir: str,
     src_ext: str,
     download_lossless: bool,

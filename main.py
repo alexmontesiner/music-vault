@@ -10,7 +10,7 @@ import sys
 
 
 def main() -> None:
-    # Backward compat: bare Spotify URL without subcommand → treat as 'download'
+    # Convenience: allow passing a bare Spotify URL without typing the 'download' subcommand
     if len(sys.argv) > 1 and "spotify.com" in sys.argv[1] and sys.argv[1] != "download":
         sys.argv.insert(1, "download")
 
