@@ -1,4 +1,4 @@
-"""Tests for music_vault.identify.metadata."""
+"""Tests for music_vault.core.metadata."""
 
 from __future__ import annotations
 
