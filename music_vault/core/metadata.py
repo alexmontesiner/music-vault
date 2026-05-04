@@ -1,14 +1,10 @@
-"""Backward-compatibility shim — metadata logic has moved to music_vault.core.metadata."""
+"""Embed track metadata into audio files using mutagen."""
 
-from music_vault.core.metadata import (  # noqa: F401
-    embed_metadata,
-    _fetch_cover,
-    _parse_shazam_track,
-    _embed_flac,
-    _embed_mp3,
-    _embed_mp4,
-    _embed_wav,
-)
+from __future__ import annotations
+
+import logging
+import urllib.request
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +36,7 @@ def _parse_shazam_track(track_info: dict) -> dict:
             elif key == "released": data["year"]  = val
             elif key == "genre":    data["genre"] = val
 
-    images   = track_info.get("images", {})
+    images    = track_info.get("images", {})
     cover_url = images.get("coverarthq") or images.get("coverart")
     if cover_url:
         data["cover"] = _fetch_cover(cover_url)

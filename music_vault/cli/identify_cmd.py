@@ -9,7 +9,7 @@ from pathlib import Path
 from music_vault.core.utils import inject_ffmpeg
 from music_vault.identify.recognizer import identify_segment, print_track_info
 from music_vault.identify.splitter import VinylSplitter
-from music_vault.identify.spotify_search import process_identified_track
+from music_vault.identify.processor import process_identified_track
 
 
 def cmd_identify(args: Namespace) -> None:

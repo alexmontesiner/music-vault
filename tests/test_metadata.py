@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from music_vault.identify.metadata import _fetch_cover, _parse_shazam_track
+from music_vault.core.metadata import _fetch_cover, _parse_shazam_track
 
 
 # ── _fetch_cover ──────────────────────────────────────────────────────────────
@@ -97,13 +97,13 @@ class TestParseShazamTrack:
 
     def test_cover_fetched_from_coverarthq(self):
         track = {"images": {"coverarthq": "http://example.com/hq.jpg"}}
-        with patch("music_vault.identify.metadata._fetch_cover", return_value=b"hq_data"):
+        with patch("music_vault.core.metadata._fetch_cover", return_value=b"hq_data"):
             result = _parse_shazam_track(track)
         assert result["cover"] == b"hq_data"
 
     def test_cover_falls_back_to_coverart(self):
         track = {"images": {"coverart": "http://example.com/art.jpg"}}
-        with patch("music_vault.identify.metadata._fetch_cover", return_value=b"art_data"):
+        with patch("music_vault.core.metadata._fetch_cover", return_value=b"art_data"):
             result = _parse_shazam_track(track)
         assert result["cover"] == b"art_data"
 
@@ -114,13 +114,13 @@ class TestParseShazamTrack:
                 "coverart": "http://example.com/art.jpg",
             }
         }
-        with patch("music_vault.identify.metadata._fetch_cover", return_value=b"data") as mock_fetch:
+        with patch("music_vault.core.metadata._fetch_cover", return_value=b"data") as mock_fetch:
             _parse_shazam_track(track)
         mock_fetch.assert_called_once_with("http://example.com/hq.jpg")
 
     def test_no_cover_url_skips_fetch(self):
         track = {"images": {}}
-        with patch("music_vault.identify.metadata._fetch_cover") as mock_fetch:
+        with patch("music_vault.core.metadata._fetch_cover") as mock_fetch:
             result = _parse_shazam_track(track)
         mock_fetch.assert_not_called()
         assert result["cover"] is None
@@ -145,38 +145,38 @@ class TestEmbedMetadataDispatch:
     """Ensure embed_metadata calls the right format-specific writer."""
 
     def _run(self, ext, mock_writer_path):
-        from music_vault.identify.metadata import embed_metadata
+        from music_vault.core.metadata import embed_metadata
 
-        with patch("music_vault.identify.metadata._parse_shazam_track", return_value={
+        with patch("music_vault.core.metadata._parse_shazam_track", return_value={
             "title": "T", "artist": "A", "album": "", "genre": "", "year": "", "cover": None,
         }), patch(mock_writer_path) as mock_writer:
             embed_metadata(f"file{ext}", {"title": "T", "subtitle": "A"})
             mock_writer.assert_called_once()
 
     def test_dispatches_to_flac_writer(self):
-        self._run(".flac", "music_vault.identify.metadata._embed_flac")
+        self._run(".flac", "music_vault.core.metadata._embed_flac")
 
     def test_dispatches_to_mp3_writer(self):
-        self._run(".mp3", "music_vault.identify.metadata._embed_mp3")
+        self._run(".mp3", "music_vault.core.metadata._embed_mp3")
 
     def test_dispatches_to_mp4_writer(self):
-        self._run(".m4a", "music_vault.identify.metadata._embed_mp4")
+        self._run(".m4a", "music_vault.core.metadata._embed_mp4")
 
     def test_dispatches_to_wav_writer(self):
-        self._run(".wav", "music_vault.identify.metadata._embed_wav")
+        self._run(".wav", "music_vault.core.metadata._embed_wav")
 
     def test_unknown_extension_does_not_raise(self):
-        from music_vault.identify.metadata import embed_metadata
+        from music_vault.core.metadata import embed_metadata
 
-        with patch("music_vault.identify.metadata._parse_shazam_track", return_value={
+        with patch("music_vault.core.metadata._parse_shazam_track", return_value={
             "title": "", "artist": "", "album": "", "genre": "", "year": "", "cover": None,
         }):
             embed_metadata("file.xyz", {})  # should not raise
 
     def test_writer_exception_is_caught(self):
-        from music_vault.identify.metadata import embed_metadata
+        from music_vault.core.metadata import embed_metadata
 
-        with patch("music_vault.identify.metadata._parse_shazam_track", return_value={
+        with patch("music_vault.core.metadata._parse_shazam_track", return_value={
             "title": "T", "artist": "A", "album": "", "genre": "", "year": "", "cover": None,
-        }), patch("music_vault.identify.metadata._embed_flac", side_effect=Exception("write error")):
+        }), patch("music_vault.core.metadata._embed_flac", side_effect=Exception("write error")):
             embed_metadata("file.flac", {})  # must not propagate

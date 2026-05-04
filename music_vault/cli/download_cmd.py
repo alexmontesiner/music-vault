@@ -40,16 +40,16 @@ def cmd_download(args: Namespace) -> None:
 
 def _run_spotiflac(args: Namespace, quality: str) -> None:
     """Invoke SpotiFLAC and exit with a friendly message on failure."""
+    from music_vault.download.spotiflac import download_url
     try:
-        from spotiflac import SpotiFLAC  # type: ignore
-        SpotiFLAC(
+        download_url(
             url=args.url,
             output=args.output,
             services=args.services,
             quality=quality,
             lyrics=args.lyrics,
             verbose=args.verbose,
-        ).download()
+        )
     except KeyboardInterrupt:
         print("\n[!] Interrupted by user.")
         sys.exit(0)
