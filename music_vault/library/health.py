@@ -31,7 +31,7 @@ def _check_single(track: Track) -> list[str]:
     if not track.genre:      issues.append("missing_genre")
     if not track.has_cover:  issues.append("missing_cover")
     if track.title and track.artist:
-        expected = safe_filename(f"{track.artist} - {track.title}")
+        expected = safe_filename(f"{track.title} - {track.artist}")
         if track.path.stem != expected:
             issues.append("filename_mismatch")
     return issues

@@ -47,7 +47,7 @@ class TestFixFilename:
         track = Track(path=f, title="My Song", artist="My Artist",
                       issues=["filename_mismatch"])
         _fix_filename(track, dry_run=False)
-        assert (tmp_path / "My Artist - My Song.mp3").exists()
+        assert (tmp_path / "My Song - My Artist.mp3").exists()
         assert not f.exists()
 
     def test_fix_updates_track_path(self, tmp_path):
@@ -56,7 +56,7 @@ class TestFixFilename:
         track = Track(path=f, title="My Song", artist="My Artist",
                       issues=["filename_mismatch"])
         _fix_filename(track, dry_run=False)
-        assert track.path.name == "My Artist - My Song.mp3"
+        assert track.path.name == "My Song - My Artist.mp3"
 
     def test_fix_removes_issue_from_track(self, tmp_path):
         f = tmp_path / "wrong_name.mp3"
@@ -67,7 +67,7 @@ class TestFixFilename:
         assert "filename_mismatch" not in track.issues
 
     def test_already_correct_name_returns_none(self, tmp_path):
-        f = tmp_path / "My Artist - My Song.mp3"
+        f = tmp_path / "My Song - My Artist.mp3"
         f.touch()
         track = Track(path=f, title="My Song", artist="My Artist",
                       issues=["filename_mismatch"])
@@ -80,7 +80,7 @@ class TestFixFilename:
                       issues=["filename_mismatch"])
         desc = _fix_filename(track, dry_run=True)
         assert "old.flac" in desc
-        assert "Artist - Song.flac" in desc
+        assert "Song - Artist.flac" in desc
 
     def test_illegal_chars_in_title_sanitized(self, tmp_path):
         f = tmp_path / "old.mp3"
@@ -97,7 +97,7 @@ class TestFixFilename:
 
 class TestFixLibrary:
     def test_no_issues_returns_empty_list(self, tmp_path):
-        track = Track(path=tmp_path / "Artist - Song.flac",
+        track = Track(path=tmp_path / "Song - Artist.flac",
                       title="Song", artist="Artist", issues=[])
         result = fix_library([track])
         assert result == []
@@ -121,7 +121,7 @@ class TestFixLibrary:
         assert isinstance(description, str)
 
     def test_non_fixable_issues_not_actioned(self, tmp_path):
-        track = Track(path=tmp_path / "Artist - Song.flac",
+        track = Track(path=tmp_path / "Song - Artist.flac",
                       title="Song", artist="Artist",
                       issues=["missing_cover", "missing_year"])
         result = fix_library([track])
@@ -155,4 +155,4 @@ class TestFixLibrary:
         track = Track(path=f, title="Song", artist="Artist",
                       issues=["filename_mismatch"])
         fix_library([track], dry_run=False)
-        assert (tmp_path / "Artist - Song.flac").exists()
+        assert (tmp_path / "Song - Artist.flac").exists()

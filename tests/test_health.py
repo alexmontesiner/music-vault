@@ -18,7 +18,7 @@ from music_vault.library.scanner import Track
 
 
 def _track(
-    name="Queen - Bohemian Rhapsody.flac",
+    name="Bohemian Rhapsody - Queen.flac",
     fmt="flac",
     title="Bohemian Rhapsody",
     artist="Queen",
@@ -66,7 +66,7 @@ class TestCheckSingle:
         assert "missing_cover" in _check_single(_track(has_cover=False))
 
     def test_filename_matches_tags_no_issue(self):
-        t = _track(name="Queen - Bohemian Rhapsody.flac",
+        t = _track(name="Bohemian Rhapsody - Queen.flac",
                    artist="Queen", title="Bohemian Rhapsody")
         assert "filename_mismatch" not in _check_single(t)
 

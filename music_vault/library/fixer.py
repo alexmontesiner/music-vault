@@ -34,8 +34,8 @@ def _fix_track(track: Track, dry_run: bool = False) -> list[str]:
 
 
 def _fix_filename(track: Track, dry_run: bool = False) -> str | None:
-    """Rename the file so its stem matches ``{artist} - {title}``."""
-    new_name = safe_filename(f"{track.artist} - {track.title}") + track.path.suffix
+    """Rename the file so its stem matches ``{title} - {artist}``."""
+    new_name = safe_filename(f"{track.title} - {track.artist}") + track.path.suffix
     new_path = track.path.parent / new_name
     if new_path == track.path:
         return None

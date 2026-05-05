@@ -114,7 +114,7 @@ music-vault library --path ~/Music --fix
 | Flag | Default | Description |
 |---|---|---|
 | `--path` | `downloads` | Root directory of your music library |
-| `--fix` | off | Rename files to match `{artist} - {title}` tags |
+| `--fix` | off | Rename files to match `{title} - {artist}` tags |
 | `--dry-run` | off | Show what `--fix` would rename without changing anything |
 
 **Health checks**
@@ -123,7 +123,7 @@ music-vault library --path ~/Music --fix
 |---|---|
 | `missing_title/artist/album/year/genre` | Required tag is empty |
 | `missing_cover` | No embedded cover art |
-| `filename_mismatch` | File name doesn't match `{artist} - {title}` (fixable with `--fix`) |
+| `filename_mismatch` | File name doesn't match `{title} - {artist}` (fixable with `--fix`) |
 | `duplicate` | Another file with the same artist + title exists |
 | `lossy_redundant` | A lossless version of this track already exists |
 
