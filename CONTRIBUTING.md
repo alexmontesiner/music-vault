@@ -2,15 +2,31 @@
 
 Thanks for taking the time to contribute!
 
+## Branch Policy
+
+**Direct pushes to `main` are not allowed.** Every change must go through a pull request.
+
+`@alexmontesiner` is the required reviewer on all PRs (enforced via [CODEOWNERS](.github/CODEOWNERS)). A PR can only be merged once it has been approved.
+
+> To fully enforce this, enable branch protection in the repository settings:
+> **Settings → Branches → Add rule** for `main` with *Require a pull request before merging* and *Require review from Code Owners* checked.
+
 ## Getting Started
 
-1. Fork the repository and clone your fork:
+### Collaborators (direct repo access)
+
+1. Clone the repository:
    ```bash
-   git clone https://github.com/<your-username>/music-vault.git
+   git clone https://github.com/alexmontesiner/music-vault.git
    cd music-vault
    ```
 
-2. Create a virtual environment and install the package in editable mode:
+2. Create a branch for your change:
+   ```bash
+   git checkout -b feat/your-feature-name
+   ```
+
+3. Create a virtual environment and install the package in editable mode:
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate   # Windows: .venv\Scripts\activate
@@ -18,12 +34,18 @@ Thanks for taking the time to contribute!
    pip install pytest
    ```
 
-   This registers the `music-vault` console script locally so you can test your changes immediately.
+### External contributors
 
-3. Create a branch for your change:
+1. Fork the repository on GitHub, then clone your fork:
    ```bash
-   git checkout -b feat/your-feature-name
+   git clone https://github.com/<your-username>/music-vault.git
+   cd music-vault
+   git remote add upstream https://github.com/alexmontesiner/music-vault.git
    ```
+
+2. Create a branch and install the package as above (steps 2–3 from collaborators).
+
+Once your changes are ready, open a pull request against `main` from your fork.
 
 ## Running Tests
 
@@ -55,5 +77,5 @@ All 293 tests should pass before you open a pull request. If you add new functio
 Open a GitHub issue with:
 - A clear description of the problem.
 - Steps to reproduce.
-- The output of `python main.py --help` and any error messages.
+- The output of `music-vault --help` and any error messages.
 - Your Python version (`python3 --version`).
