@@ -20,7 +20,7 @@ def cmd_library(args: Namespace) -> None:
 
     if args.fix or args.dry_run:
         actions = fix_library(tracks, dry_run=args.dry_run)
-        if not actions:
+        if actions is None:
             print("[=] Nothing to fix.")
             return
         prefix = "[DRY RUN]" if args.dry_run else "[FIX]"

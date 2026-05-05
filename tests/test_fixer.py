@@ -97,11 +97,11 @@ class TestFixFilename:
 
 
 class TestFixLibrary:
-    def test_no_issues_returns_empty_list(self, tmp_path):
+    def test_no_issues_returns_none(self, tmp_path):
         track = Track(path=tmp_path / "Song - Artist.flac",
                       title="Song", artist="Artist", issues=[])
         result = fix_library([track])
-        assert result == []
+        assert result is None
 
     def test_returns_actions_for_fixable_tracks(self, tmp_path):
         f = tmp_path / "wrong.mp3"
@@ -127,7 +127,7 @@ class TestFixLibrary:
                       title="Song", artist="Artist",
                       issues=["duplicate", "lossy_redundant"])
         result = fix_library([track])
-        assert result == []
+        assert result is None
 
     def test_multiple_tracks_processed(self, tmp_path):
         f1 = tmp_path / "wrong1.mp3"

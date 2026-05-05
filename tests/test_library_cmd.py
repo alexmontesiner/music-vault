@@ -59,7 +59,6 @@ class TestLibraryParser:
 class TestCmdLibrary:
     def _run(self, tracks=None, fix_actions=None, **arg_overrides):
         tracks = tracks or []
-        fix_actions = fix_actions or []
         with patch("music_vault.cli.library_cmd.scan_library", return_value=tracks) as mock_scan, \
              patch("music_vault.cli.library_cmd.check_all") as mock_check, \
              patch("music_vault.cli.library_cmd.print_report") as mock_report, \
@@ -85,32 +84,32 @@ class TestCmdLibrary:
         mock_fix.assert_not_called()
 
     def test_fix_flag_calls_fix_library_with_dry_run_false(self):
-        tracks = [_make_track()]
+        tracks = [_make_track(issues=["filename_mismatch"])]
         _, _, _, mock_fix = self._run(tracks=tracks, fix=True, dry_run=False)
         mock_fix.assert_called_once_with(tracks, dry_run=False)
 
     def test_dry_run_flag_calls_fix_library_with_dry_run_true(self):
-        tracks = [_make_track()]
+        tracks = [_make_track(issues=["filename_mismatch"])]
         _, _, _, mock_fix = self._run(tracks=tracks, fix=False, dry_run=True)
         mock_fix.assert_called_once_with(tracks, dry_run=True)
 
     def test_no_actions_prints_nothing_to_fix(self, capsys):
-        self._run(fix=True, fix_actions=[])
+        self._run(fix=True, fix_actions=None)  # None = no fixable tracks
         assert "Nothing to fix" in capsys.readouterr().out
 
     def test_fix_action_description_printed(self, capsys):
-        track = _make_track()
-        self._run(fix=True, fix_actions=[(track, "rename  old.mp3  →  new.mp3")])
+        track = _make_track(issues=["filename_mismatch"])
+        self._run(tracks=[track], fix=True, fix_actions=[(track, "rename  old.mp3  →  new.mp3")])
         assert "rename  old.mp3  →  new.mp3" in capsys.readouterr().out
 
     def test_dry_run_prefix_in_output(self, capsys):
-        track = _make_track()
-        self._run(dry_run=True, fix_actions=[(track, "rename  old.mp3  →  new.mp3")])
+        track = _make_track(issues=["filename_mismatch"])
+        self._run(tracks=[track], dry_run=True, fix_actions=[(track, "rename  old.mp3  →  new.mp3")])
         assert "[DRY RUN]" in capsys.readouterr().out
 
     def test_fix_prefix_in_output(self, capsys):
-        track = _make_track()
-        self._run(fix=True, fix_actions=[(track, "rename  old.mp3  →  new.mp3")])
+        track = _make_track(issues=["filename_mismatch"])
+        self._run(tracks=[track], fix=True, fix_actions=[(track, "rename  old.mp3  →  new.mp3")])
         assert "[FIX]" in capsys.readouterr().out
 
     def test_scanning_message_includes_path(self, capsys):

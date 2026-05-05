@@ -19,16 +19,20 @@ _TAG_ISSUES: frozenset[str] = frozenset({
 def fix_library(
     tracks: list[Track],
     dry_run: bool = False,
-) -> list[tuple[Track, str]]:
+) -> list[tuple[Track, str]] | None:
     """Apply all safe auto-fixes to *tracks*.
 
+    Returns ``None`` when there are no fixable tracks (nothing to do).
     Returns a list of ``(track, description)`` pairs for every action taken
-    (or that would be taken in dry-run mode).
+    (or that would be taken in dry-run mode); the list may be empty if all
+    Shazam identification attempts failed.
     """
     fixable = [
         t for t in tracks
         if any(i in t.issues for i in _TAG_ISSUES) or "filename_mismatch" in t.issues
     ]
+    if not fixable:
+        return None
     total = len(fixable)
     actions: list[tuple[Track, str]] = []
     for idx, track in enumerate(fixable, 1):
@@ -79,7 +83,7 @@ def _fix_missing_tags(track: Track, dry_run: bool = False) -> str | None:
     from music_vault.identify.recognizer import identify_segment
     track_info = identify_segment(segment)
     if not track_info:
-        logger.debug("Shazam returned no match for %s", track.path.name)
+        print(f"    [?] Shazam: no match found for {track.path.name}", flush=True)
         return None
 
     from music_vault.core.metadata import embed_metadata, _parse_shazam_track
