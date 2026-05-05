@@ -14,6 +14,7 @@ def main() -> None:
     from music_vault.cli.download_cmd import cmd_download
     from music_vault.cli.identify_cmd import cmd_identify
     from music_vault.cli.library_cmd import cmd_library
+    from music_vault.cli.convert_cmd import cmd_convert
 
     parser = build_parser()
     args   = parser.parse_args()
@@ -24,6 +25,8 @@ def main() -> None:
         cmd_identify(args)
     elif args.command == "library":
         cmd_library(args)
+    elif args.command == "convert":
+        cmd_convert(args)
     else:
         parser.print_help()
 

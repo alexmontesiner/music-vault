@@ -15,6 +15,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_download_parser(sub)
     _add_identify_parser(sub)
     _add_library_parser(sub)
+    _add_convert_parser(sub)
 
     return parser
 
@@ -30,6 +31,10 @@ def _add_download_parser(sub: argparse._SubParsersAction) -> None:
     p.add_argument("-q", "--quality",  default="flac",
                    choices=["flac", "hi-res"],
                    help="Audio quality (default: flac).")
+    p.add_argument("-f", "--format",   default="flac",
+                   choices=["flac", "aiff", "wav", "mp3", "alac"],
+                   help="Output audio format (default: flac). Files are downloaded as FLAC "
+                        "then converted when a different format is requested.")
     p.add_argument("-s", "--services", nargs="+",
                    default=["qobuz", "amazon", "youtube"],
                    metavar="SVC",
@@ -86,3 +91,24 @@ def _add_library_parser(sub: argparse._SubParsersAction) -> None:
                    help="Automatically rename files whose names don't match their tags.")
     p.add_argument("--dry-run", action="store_true",
                    help="Show what --fix would do without making any changes.")
+
+
+# ── convert sub-command ───────────────────────────────────────────────────────
+
+def _add_convert_parser(sub: argparse._SubParsersAction) -> None:
+    p = sub.add_parser(
+        "convert",
+        help="Convert all audio files in a folder to a different format.",
+    )
+    p.add_argument("input", metavar="DIR",
+                   help="Directory containing audio files to convert.")
+    p.add_argument("-f", "--format", required=True,
+                   choices=["flac", "aiff", "wav", "mp3", "alac"],
+                   help="Target audio format.")
+    p.add_argument("-o", "--output", default=None, metavar="DIR",
+                   help="Output directory for converted files "
+                        "(default: downloads/<format>).")
+    p.add_argument("--delete", action="store_true",
+                   help="Delete original files after successful conversion.")
+    p.add_argument("--dry-run", action="store_true",
+                   help="Show what would be converted without making any changes.")

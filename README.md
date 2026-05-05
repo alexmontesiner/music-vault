@@ -4,7 +4,8 @@ A command-line tool for downloading Spotify playlists and tracks in lossless qua
 
 ## Features
 
-- **Download** – Fetch any Spotify track or playlist in lossless (FLAC) or hi-res quality via Qobuz, Amazon Music, and YouTube. Optionally embed lyrics and skip already-downloaded tracks.
+- **Download** – Fetch any Spotify track or playlist in lossless quality via Qobuz, Amazon Music, and YouTube. Choose your output format (FLAC, AIFF, WAV, MP3, ALAC). Files land in a per-format subfolder so different formats stay cleanly separated.
+- **Convert** – Convert an existing folder of audio files to any supported format. Output goes to a separate directory; originals are only deleted when you explicitly ask.
 - **Identify** – Run Shazam recognition against any audio file. Supports full vinyl-side rips: automatically splits on silence, identifies each track, and embeds metadata.
 - **Library** – Scan your local library, detect health issues (missing tags, missing cover art, duplicate tracks, redundant lossy copies), and auto-fix filename mismatches.
 
@@ -33,10 +34,13 @@ This installs a `music-vault` console script into the venv. You can now run `mus
 ### Download
 
 ```bash
-# Download a Spotify playlist in FLAC (default)
+# Download a Spotify playlist in FLAC (default) → downloads/spotify/flac/
 music-vault download "https://open.spotify.com/playlist/..."
 
-# Hi-res quality, custom output directory
+# Download as AIFF → downloads/spotify/aiff/
+music-vault download "https://open.spotify.com/playlist/..." -f aiff
+
+# Hi-res quality, custom base output directory
 music-vault download "https://open.spotify.com/album/..." -q hi-res -o ~/Music/albums
 
 # Skip already-downloaded tracks and print a summary of new additions
@@ -51,12 +55,41 @@ music-vault "https://open.spotify.com/track/..."
 | Flag | Default | Description |
 |---|---|---|
 | `url` | — | Spotify playlist or track URL |
-| `-o / --output` | `downloads/spotify` | Output directory |
+| `-o / --output` | `downloads/spotify` | Base output directory. A `/<format>` subfolder is appended automatically |
 | `-q / --quality` | `flac` | `flac` or `hi-res` |
+| `-f / --format` | `flac` | Output format: `flac`, `aiff`, `wav`, `mp3`, `alac` |
 | `-s / --services` | `qobuz amazon youtube` | Providers to try in order |
 | `--lyrics` | on | Embed lyrics when available |
 | `--update` | off | Skip existing tracks, report new ones |
 | `--verbose` | off | Show SpotiFLAC debug output |
+
+---
+
+### Convert
+
+```bash
+# Convert all files in a folder to AIFF → downloads/aiff/ (default output)
+music-vault convert downloads/spotify/flac -f aiff
+
+# Convert to a custom output directory
+music-vault convert downloads/spotify/flac -f aiff -o ~/Music/aiff
+
+# Delete the originals after conversion
+music-vault convert downloads/spotify/flac -f aiff --delete
+
+# Preview what would be converted without doing anything
+music-vault convert downloads/spotify/flac -f aiff --dry-run
+```
+
+**Options**
+
+| Flag | Default | Description |
+|---|---|---|
+| `DIR` | — | Directory containing audio files to convert |
+| `-f / --format` | *(required)* | Target format: `flac`, `aiff`, `wav`, `mp3`, `alac` |
+| `-o / --output` | `downloads/<format>` | Output directory for converted files |
+| `--delete` | off | Delete original files after successful conversion |
+| `--dry-run` | off | Show what would be converted without making any changes |
 
 ---
 
@@ -137,7 +170,8 @@ music-vault/
 │   │   ├── parser.py
 │   │   ├── download_cmd.py
 │   │   ├── identify_cmd.py
-│   │   └── library_cmd.py
+│   │   ├── library_cmd.py
+│   │   └── convert_cmd.py
 │   ├── core/                 # Shared utilities and metadata embedding
 │   │   ├── utils.py
 │   │   └── metadata.py
