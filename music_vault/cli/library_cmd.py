@@ -12,8 +12,9 @@ from music_vault.library.report import print_report
 
 def cmd_library(args: Namespace) -> None:
     """Entry point for the ``library`` sub-command."""
-    print(f"[*] Scanning {args.path} …")
+    print(f"[*] Scanning {args.path} …", flush=True)
     tracks = scan_library(args.path)
+    print(f"[*] Found {len(tracks)} track(s). Running health checks …", flush=True)
     check_all(tracks)
     print_report(tracks)
 

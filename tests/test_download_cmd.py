@@ -15,6 +15,7 @@ def _args(**overrides) -> Namespace:
         url="https://open.spotify.com/track/abc123",
         output="downloads/spotify",
         quality="flac",
+        format="flac",
         services=["qobuz", "amazon", "youtube"],
         lyrics=True,
         verbose=False,
@@ -54,14 +55,14 @@ class TestCmdDownload:
         with patch("music_vault.cli.download_cmd.inject_ffmpeg"), \
              patch("music_vault.cli.download_cmd._run_spotiflac") as mock_run:
             cmd_download(_args(quality="flac"))
-        _, quality_arg = mock_run.call_args[0]
+        _, quality_arg, _ = mock_run.call_args[0]
         assert quality_arg == "LOSSLESS"
 
     def test_passes_hi_res_quality(self):
         with patch("music_vault.cli.download_cmd.inject_ffmpeg"), \
              patch("music_vault.cli.download_cmd._run_spotiflac") as mock_run:
             cmd_download(_args(quality="hi-res"))
-        _, quality_arg = mock_run.call_args[0]
+        _, quality_arg, _ = mock_run.call_args[0]
         assert quality_arg == "HI_RES"
 
     def test_update_mode_calls_snapshot_before_and_after(self, tmp_path):
@@ -99,7 +100,7 @@ class TestRunSpotiflac:
         mock_spotiflac_cls.return_value = mock_instance
         mock_module = MagicMock(SpotiFLAC=mock_spotiflac_cls)
         with patch.dict("sys.modules", {"spotiflac": mock_module}):
-            _run_spotiflac(_args(), "LOSSLESS")
+            _run_spotiflac(_args(), "LOSSLESS", "downloads/spotify/flac")
         mock_instance.download.assert_called_once()
 
     def test_passes_correct_kwargs_to_spotiflac(self):
@@ -113,10 +114,10 @@ class TestRunSpotiflac:
         mock_spotiflac_cls = MagicMock()
         mock_module = MagicMock(SpotiFLAC=mock_spotiflac_cls)
         with patch.dict("sys.modules", {"spotiflac": mock_module}):
-            _run_spotiflac(args, "LOSSLESS")
+            _run_spotiflac(args, "LOSSLESS", "/tmp/out/flac")
         call_kwargs = mock_spotiflac_cls.call_args[1]
         assert call_kwargs["url"] == args.url
-        assert call_kwargs["output"] == args.output
+        assert call_kwargs["output"] == "/tmp/out/flac"
         assert call_kwargs["quality"] == "LOSSLESS"
         assert call_kwargs["services"] == ["qobuz"]
 
@@ -125,7 +126,7 @@ class TestRunSpotiflac:
         mock_module = MagicMock(SpotiFLAC=mock_spotiflac_cls)
         with patch.dict("sys.modules", {"spotiflac": mock_module}):
             with pytest.raises(SystemExit) as exc:
-                _run_spotiflac(_args(), "LOSSLESS")
+                _run_spotiflac(_args(), "LOSSLESS", "downloads/spotify/flac")
         assert exc.value.code == 0
 
     def test_generic_exception_exits_with_code_1(self):
@@ -133,5 +134,5 @@ class TestRunSpotiflac:
         mock_module = MagicMock(SpotiFLAC=mock_spotiflac_cls)
         with patch.dict("sys.modules", {"spotiflac": mock_module}):
             with pytest.raises(SystemExit) as exc:
-                _run_spotiflac(_args(), "LOSSLESS")
+                _run_spotiflac(_args(), "LOSSLESS", "downloads/spotify/flac")
         assert exc.value.code == 1

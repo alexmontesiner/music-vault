@@ -16,13 +16,22 @@ def _segment_to_bytes(segment, fmt: str = "mp3", bitrate: str = "128k") -> bytes
     return buf.getvalue()
 
 
+_SHAZAM_TIMEOUT_SEC: int = 30  # max seconds to wait for a single Shazam request
+
+
 async def _shazam_recognize(audio_bytes: bytes) -> dict | None:
     """Send *audio_bytes* to Shazam and return the ``track`` dict, or ``None``."""
     from shazamio import Shazam  # type: ignore
     shazam = Shazam()
     try:
-        result = await shazam.recognize(audio_bytes)
+        result = await asyncio.wait_for(
+            shazam.recognize(audio_bytes),
+            timeout=_SHAZAM_TIMEOUT_SEC,
+        )
         return result.get("track")
+    except asyncio.TimeoutError:
+        logger.debug("Shazam timed out after %s s", _SHAZAM_TIMEOUT_SEC)
+        return None
     except Exception as exc:
         logger.debug("Shazam error: %s", exc)
         return None

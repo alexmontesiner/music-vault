@@ -24,8 +24,14 @@ def fix_library(
     Returns a list of ``(track, description)`` pairs for every action taken
     (or that would be taken in dry-run mode).
     """
+    fixable = [
+        t for t in tracks
+        if any(i in t.issues for i in _TAG_ISSUES) or "filename_mismatch" in t.issues
+    ]
+    total = len(fixable)
     actions: list[tuple[Track, str]] = []
-    for track in tracks:
+    for idx, track in enumerate(fixable, 1):
+        print(f"[{idx}/{total}] {track.path.name}", flush=True)
         for description in _fix_track(track, dry_run=dry_run):
             actions.append((track, description))
     return actions
