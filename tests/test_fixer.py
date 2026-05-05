@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from music_vault.library.fixer import _fix_filename, fix_library
+from music_vault.library.fixer import _fix_filename, _fix_missing_tags, fix_library
 from music_vault.library.scanner import Track
 
 
@@ -121,9 +122,10 @@ class TestFixLibrary:
         assert isinstance(description, str)
 
     def test_non_fixable_issues_not_actioned(self, tmp_path):
+        # duplicate and lossy_redundant are not auto-fixable
         track = Track(path=tmp_path / "Song - Artist.flac",
                       title="Song", artist="Artist",
-                      issues=["missing_cover", "missing_year"])
+                      issues=["duplicate", "lossy_redundant"])
         result = fix_library([track])
         assert result == []
 
@@ -156,3 +158,132 @@ class TestFixLibrary:
                       issues=["filename_mismatch"])
         fix_library([track], dry_run=False)
         assert (tmp_path / "Song - Artist.flac").exists()
+
+
+# ── _fix_missing_tags ─────────────────────────────────────────────────────────
+
+_SHAZAM_TRACK = {
+    "title": "Acid Tracks",
+    "subtitle": "Phuture",
+    "sections": [{"metadata": [
+        {"title": "Album", "text": "Trax Classics"},
+        {"title": "Released", "text": "1987"},
+        {"title": "Genre", "text": "Electronic"},
+    ]}],
+    "images": {},
+}
+
+_PARSED = {
+    "title": "Acid Tracks", "artist": "Phuture",
+    "album": "Trax Classics", "year": "1987", "genre": "Electronic", "cover": None,
+}
+
+
+class TestFixMissingTags:
+    def test_dry_run_returns_description_without_loading(self, tmp_path):
+        f = tmp_path / "unknown.flac"
+        f.touch()
+        track = Track(path=f, title="", artist="", issues=["missing_title", "missing_artist"])
+        with patch("pydub.AudioSegment.from_file") as mock_load:
+            result = _fix_missing_tags(track, dry_run=True)
+        mock_load.assert_not_called()
+        assert result is not None
+        assert "identify" in result
+
+    def test_dry_run_does_not_modify_track(self, tmp_path):
+        f = tmp_path / "unknown.flac"
+        f.touch()
+        track = Track(path=f, title="", artist="", issues=["missing_title"])
+        _fix_missing_tags(track, dry_run=True)
+        assert track.title == ""
+        assert "missing_title" in track.issues
+
+    def test_pydub_load_error_returns_none(self, tmp_path):
+        f = tmp_path / "bad.flac"
+        f.touch()
+        track = Track(path=f, title="", artist="", issues=["missing_title"])
+        with patch("pydub.AudioSegment.from_file", side_effect=Exception("bad file")):
+            result = _fix_missing_tags(track, dry_run=False)
+        assert result is None
+
+    def test_shazam_no_match_returns_none(self, tmp_path):
+        f = tmp_path / "unknown.flac"
+        f.touch()
+        track = Track(path=f, title="", artist="", issues=["missing_title"])
+        mock_segment = MagicMock()
+        with patch("pydub.AudioSegment.from_file", return_value=mock_segment), \
+             patch("music_vault.identify.recognizer.identify_segment", return_value=None):
+            result = _fix_missing_tags(track, dry_run=False)
+        assert result is None
+
+    def test_successful_identification_embeds_metadata(self, tmp_path):
+        f = tmp_path / "unknown.flac"
+        f.touch()
+        track = Track(path=f, title="", artist="", issues=["missing_title", "missing_artist"])
+        mock_segment = MagicMock()
+        with patch("pydub.AudioSegment.from_file", return_value=mock_segment), \
+             patch("music_vault.identify.recognizer.identify_segment", return_value=_SHAZAM_TRACK), \
+             patch("music_vault.core.metadata.embed_metadata") as mock_embed, \
+             patch("music_vault.core.metadata._parse_shazam_track", return_value=_PARSED):
+            _fix_missing_tags(track, dry_run=False)
+        mock_embed.assert_called_once_with(str(f), _SHAZAM_TRACK)
+
+    def test_successful_identification_updates_track_fields(self, tmp_path):
+        f = tmp_path / "unknown.flac"
+        f.touch()
+        track = Track(path=f, title="", artist="", issues=["missing_title", "missing_artist"])
+        mock_segment = MagicMock()
+        with patch("pydub.AudioSegment.from_file", return_value=mock_segment), \
+             patch("music_vault.identify.recognizer.identify_segment", return_value=_SHAZAM_TRACK), \
+             patch("music_vault.core.metadata.embed_metadata"), \
+             patch("music_vault.core.metadata._parse_shazam_track", return_value=_PARSED):
+            _fix_missing_tags(track, dry_run=False)
+        assert track.title == "Acid Tracks"
+        assert track.artist == "Phuture"
+        assert track.album == "Trax Classics"
+        assert track.year == "1987"
+        assert track.genre == "Electronic"
+
+    def test_successful_identification_removes_tag_issues(self, tmp_path):
+        f = tmp_path / "unknown.flac"
+        f.touch()
+        track = Track(path=f, title="", artist="",
+                      issues=["missing_title", "missing_artist", "missing_cover"])
+        mock_segment = MagicMock()
+        with patch("pydub.AudioSegment.from_file", return_value=mock_segment), \
+             patch("music_vault.identify.recognizer.identify_segment", return_value=_SHAZAM_TRACK), \
+             patch("music_vault.core.metadata.embed_metadata"), \
+             patch("music_vault.core.metadata._parse_shazam_track", return_value=_PARSED):
+            _fix_missing_tags(track, dry_run=False)
+        assert "missing_title" not in track.issues
+        assert "missing_artist" not in track.issues
+        assert "missing_cover" not in track.issues
+
+    def test_description_contains_title_and_artist(self, tmp_path):
+        f = tmp_path / "unknown.flac"
+        f.touch()
+        track = Track(path=f, title="", artist="", issues=["missing_title"])
+        mock_segment = MagicMock()
+        with patch("pydub.AudioSegment.from_file", return_value=mock_segment), \
+             patch("music_vault.identify.recognizer.identify_segment", return_value=_SHAZAM_TRACK), \
+             patch("music_vault.core.metadata.embed_metadata"), \
+             patch("music_vault.core.metadata._parse_shazam_track", return_value=_PARSED):
+            result = _fix_missing_tags(track, dry_run=False)
+        assert "Acid Tracks" in result
+        assert "Phuture" in result
+
+    def test_after_identification_filename_mismatch_also_fixed(self, tmp_path):
+        f = tmp_path / "unknown.flac"
+        f.touch()
+        track = Track(path=f, title="", artist="", issues=["missing_title", "missing_artist"])
+        mock_segment = MagicMock()
+        with patch("pydub.AudioSegment.from_file", return_value=mock_segment), \
+             patch("music_vault.identify.recognizer.identify_segment", return_value=_SHAZAM_TRACK), \
+             patch("music_vault.core.metadata.embed_metadata"), \
+             patch("music_vault.core.metadata._parse_shazam_track", return_value=_PARSED):
+            actions = fix_library([track], dry_run=False)
+        descriptions = [d for _, d in actions]
+        assert any("identified" in d for d in descriptions)
+        assert any("rename" in d for d in descriptions)
+        assert (tmp_path / "Acid Tracks - Phuture.flac").exists()
+

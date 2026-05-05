@@ -2,10 +2,17 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+import logging
 
 from music_vault.core.utils import safe_filename
 from music_vault.library.scanner import Track
+
+logger = logging.getLogger(__name__)
+
+_TAG_ISSUES: frozenset[str] = frozenset({
+    "missing_title", "missing_artist", "missing_album",
+    "missing_year", "missing_genre", "missing_cover",
+})
 
 
 def fix_library(
@@ -26,11 +33,59 @@ def fix_library(
 
 def _fix_track(track: Track, dry_run: bool = False) -> list[str]:
     actions: list[str] = []
+
+    # 1. Fix missing tags via Shazam identification
+    if any(issue in track.issues for issue in _TAG_ISSUES):
+        action = _fix_missing_tags(track, dry_run=dry_run)
+        if action:
+            actions.append(action)
+            # After real identification re-evaluate filename: tags now exist
+            if not dry_run and track.title and track.artist:
+                expected = safe_filename(f"{track.title} - {track.artist}")
+                if track.path.stem != expected and "filename_mismatch" not in track.issues:
+                    track.issues.append("filename_mismatch")
+
+    # 2. Fix filename mismatch (may have been there before, or just added above)
     if "filename_mismatch" in track.issues:
         action = _fix_filename(track, dry_run=dry_run)
         if action:
             actions.append(action)
+
     return actions
+
+
+def _fix_missing_tags(track: Track, dry_run: bool = False) -> str | None:
+    """Identify *track* via Shazam and embed the returned metadata."""
+    if dry_run:
+        return f"identify  {track.path.name}  (Shazam — run without --dry-run to apply)"
+
+    try:
+        from pydub import AudioSegment  # type: ignore
+        segment = AudioSegment.from_file(str(track.path))
+    except Exception as exc:
+        logger.debug("Could not load %s for identification: %s", track.path.name, exc)
+        return None
+
+    from music_vault.identify.recognizer import identify_segment
+    track_info = identify_segment(segment)
+    if not track_info:
+        logger.debug("Shazam returned no match for %s", track.path.name)
+        return None
+
+    from music_vault.core.metadata import embed_metadata, _parse_shazam_track
+    embed_metadata(str(track.path), track_info)
+
+    parsed = _parse_shazam_track(track_info)
+    if parsed["title"]:  track.title  = parsed["title"]
+    if parsed["artist"]: track.artist = parsed["artist"]
+    if parsed["album"]:  track.album  = parsed["album"]
+    if parsed["year"]:   track.year   = parsed["year"]
+    if parsed["genre"]:  track.genre  = parsed["genre"]
+    if parsed["cover"]:  track.has_cover = True
+
+    track.issues = [i for i in track.issues if i not in _TAG_ISSUES]
+
+    return f"identified  {track.path.name}  →  {track.title} - {track.artist}"
 
 
 def _fix_filename(track: Track, dry_run: bool = False) -> str | None:
