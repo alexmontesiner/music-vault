@@ -17,21 +17,16 @@ A command-line tool for downloading Spotify playlists and tracks in lossless qua
 - [pydub](https://github.com/jiaaro/pydub) – audio segment splitting
 - [static-ffmpeg](https://pypi.org/project/static-ffmpeg/) *(optional)* – bundled ffmpeg, no system install needed
 
-Install dependencies:
-
-```bash
-pip install mutagen pydub shazamio static-ffmpeg
-# SpotiFLAC requires a separate setup — see its docs
-```
-
 ## Installation
 
 ```bash
 git clone https://github.com/alexmontesiner/music-vault.git
 cd music-vault
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt   # create one from pip freeze after installing deps
+pip install -r requirements.txt
 ```
+
+> **SpotiFLAC** is not on PyPI. Install it separately following its own instructions, then uncomment the `spotiflac` line in `requirements.txt`.
 
 ## Usage
 

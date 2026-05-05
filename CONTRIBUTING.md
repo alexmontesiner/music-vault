@@ -14,7 +14,7 @@ Thanks for taking the time to contribute!
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate   # Windows: .venv\Scripts\activate
-   pip install mutagen pydub shazamio static-ffmpeg pytest
+   pip install -r requirements.txt pytest
    ```
 
 3. Create a branch for your change:
