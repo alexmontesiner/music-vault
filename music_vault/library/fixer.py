@@ -59,6 +59,9 @@ def _fix_missing_tags(track: Track, dry_run: bool = False) -> str | None:
     if dry_run:
         return f"identify  {track.path.name}  (Shazam — run without --dry-run to apply)"
 
+    from music_vault.core.utils import inject_ffmpeg
+    inject_ffmpeg()
+
     try:
         from pydub import AudioSegment  # type: ignore
         segment = AudioSegment.from_file(str(track.path))
