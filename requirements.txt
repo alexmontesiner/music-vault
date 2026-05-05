@@ -1,12 +1,9 @@
 # Core dependencies
 mutagen>=1.47.0
 pydub>=0.25.1
-shazamio>=0.5.0
+shazamio>=0.8.1
+spotiflac>=0.4.1
 
 # Optional: bundled ffmpeg (no system install needed)
 # Remove if you have ffmpeg installed system-wide
 static-ffmpeg>=2.5
-
-# SpotiFLAC: lossless download back-end
-# Not on PyPI — install separately from the project's own instructions
-# spotiflac

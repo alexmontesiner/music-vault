@@ -11,7 +11,7 @@ A command-line tool for downloading Spotify playlists and tracks in lossless qua
 ## Requirements
 
 - Python 3.11+
-- [SpotiFLAC](https://github.com/spotDL/spotify-downloader) – lossless download back-end
+- [SpotiFLAC](https://pypi.org/project/spotiflac/) – lossless download back-end
 - [shazamio](https://github.com/dotX12/ShazamIO) – async Shazam client
 - [mutagen](https://mutagen.readthedocs.io/) – audio tag reading/writing
 - [pydub](https://github.com/jiaaro/pydub) – audio segment splitting
@@ -25,8 +25,6 @@ cd music-vault
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
-
-> **SpotiFLAC** is not on PyPI. Install it separately following its own instructions, then uncomment the `spotiflac` line in `requirements.txt`.
 
 ## Usage
 
