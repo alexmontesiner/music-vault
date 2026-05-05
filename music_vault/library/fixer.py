@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import unicodedata
 
 from music_vault.core.utils import safe_filename
 from music_vault.library.scanner import Track
@@ -101,7 +102,11 @@ def _fix_filename(track: Track, dry_run: bool = False) -> str | None:
     """Rename the file so its stem matches ``{title} - {artist}``."""
     new_name = safe_filename(f"{track.title} - {track.artist}") + track.path.suffix
     new_path = track.path.parent / new_name
-    if new_path == track.path:
+    # Normalize both sides to NFC before comparing: macOS APFS/HFS+ stores
+    # filenames in NFD (decomposed Unicode), so characters like ñ, é, ü will
+    # differ from the NFC string produced by safe_filename even though they
+    # look identical when printed.
+    if unicodedata.normalize("NFC", str(new_path)) == unicodedata.normalize("NFC", str(track.path)):
         return None
     description = f"rename  {track.path.name}  →  {new_name}"
     if not dry_run:

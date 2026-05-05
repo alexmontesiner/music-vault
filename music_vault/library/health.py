@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import unicodedata
 from collections import defaultdict
 
 from music_vault.core.utils import safe_filename
@@ -32,7 +33,10 @@ def _check_single(track: Track) -> list[str]:
     if not track.has_cover:  issues.append("missing_cover")
     if track.title and track.artist:
         expected = safe_filename(f"{track.title} - {track.artist}")
-        if track.path.stem != expected:
+        # Normalize to NFC: macOS stores filenames in NFD so path.stem may
+        # differ from the NFC string produced by safe_filename for the same
+        # visible text (e.g. ñ, é, ü).
+        if unicodedata.normalize("NFC", track.path.stem) != unicodedata.normalize("NFC", expected):
             issues.append("filename_mismatch")
     return issues
 
