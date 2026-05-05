@@ -10,12 +10,15 @@ Thanks for taking the time to contribute!
    cd music-vault
    ```
 
-2. Create a virtual environment and install dependencies:
+2. Create a virtual environment and install the package in editable mode:
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate   # Windows: .venv\Scripts\activate
-   pip install -r requirements.txt pytest
+   pip install -e ".[dev]"
+   pip install pytest
    ```
+
+   This registers the `music-vault` console script locally so you can test your changes immediately.
 
 3. Create a branch for your change:
    ```bash

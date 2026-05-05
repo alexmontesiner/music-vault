@@ -1,36 +1,10 @@
-"""Entry point for the Spotify Downloader CLI.
+"""Thin shim for direct execution: python main.py <subcommand> [options]
 
-All application logic lives in the ``music_vault`` package.
-Run:  python main.py <subcommand> [options]
+Prefer using the installed console script after `pip install -e .`:
+    music-vault <subcommand> [options]
 """
 
-from __future__ import annotations
-
-import sys
-
-
-def main() -> None:
-    # Convenience: allow passing a bare Spotify URL without typing the 'download' subcommand
-    if len(sys.argv) > 1 and "spotify.com" in sys.argv[1] and sys.argv[1] != "download":
-        sys.argv.insert(1, "download")
-
-    from music_vault.cli.parser import build_parser
-    from music_vault.cli.download_cmd import cmd_download
-    from music_vault.cli.identify_cmd import cmd_identify
-    from music_vault.cli.library_cmd import cmd_library
-
-    parser = build_parser()
-    args   = parser.parse_args()
-
-    if args.command == "download":
-        cmd_download(args)
-    elif args.command == "identify":
-        cmd_identify(args)
-    elif args.command == "library":
-        cmd_library(args)
-    else:
-        parser.print_help()
-
+from music_vault.__main__ import main
 
 if __name__ == "__main__":
     main()

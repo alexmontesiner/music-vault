@@ -23,8 +23,10 @@ A command-line tool for downloading Spotify playlists and tracks in lossless qua
 git clone https://github.com/alexmontesiner/music-vault.git
 cd music-vault
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -e .
 ```
+
+This installs a `music-vault` console script into the venv. You can now run `music-vault` directly instead of `python main.py`.
 
 ## Usage
 
@@ -32,16 +34,16 @@ pip install -r requirements.txt
 
 ```bash
 # Download a Spotify playlist in FLAC (default)
-python main.py download "https://open.spotify.com/playlist/..."
+music-vault download "https://open.spotify.com/playlist/..."
 
 # Hi-res quality, custom output directory
-python main.py download "https://open.spotify.com/album/..." -q hi-res -o ~/Music/albums
+music-vault download "https://open.spotify.com/album/..." -q hi-res -o ~/Music/albums
 
 # Skip already-downloaded tracks and print a summary of new additions
-python main.py download "https://open.spotify.com/playlist/..." --update
+music-vault download "https://open.spotify.com/playlist/..." --update
 
 # Pass a bare Spotify URL — the download subcommand is inferred automatically
-python main.py "https://open.spotify.com/track/..."
+music-vault "https://open.spotify.com/track/..."
 ```
 
 **Options**
@@ -62,16 +64,16 @@ python main.py "https://open.spotify.com/track/..."
 
 ```bash
 # Identify a single file and embed metadata
-python main.py identify recording.mp3
+music-vault identify recording.mp3
 
 # Identify a vinyl-side rip: split on silence, identify each track
-python main.py identify side_a.flac --split
+music-vault identify side_a.flac --split
 
 # Identify and download a lossless version for each recognised track
-python main.py identify side_a.flac --split --download-lossless
+music-vault identify side_a.flac --split --download-lossless
 
 # Tune the silence detection for a noisy recording
-python main.py identify side_a.flac --split --min-silence-len 2000 --silence-thresh -45
+music-vault identify side_a.flac --split --min-silence-len 2000 --silence-thresh -45
 ```
 
 **Options**
@@ -95,16 +97,16 @@ python main.py identify side_a.flac --split --min-silence-len 2000 --silence-thr
 
 ```bash
 # Scan the default downloads/ directory and print a health report
-python main.py library
+music-vault library
 
 # Scan a custom directory
-python main.py library --path ~/Music
+music-vault library --path ~/Music
 
 # Preview what would be renamed (dry run)
-python main.py library --path ~/Music --dry-run
+music-vault library --path ~/Music --dry-run
 
 # Actually rename files whose names don't match their tags
-python main.py library --path ~/Music --fix
+music-vault library --path ~/Music --fix
 ```
 
 **Options**
@@ -157,6 +159,7 @@ music-vault/
 ## Running Tests
 
 ```bash
+pip install pytest
 python3 -m pytest tests/ -v
 ```
 

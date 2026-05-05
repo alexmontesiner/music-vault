@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "music-vault"
+version = "0.1.0"
+description = "Download Spotify playlists/tracks in lossless quality, identify audio files via Shazam, and maintain a local music library."
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.11"
+dependencies = [
+    "mutagen>=1.47.0",
+    "pydub>=0.25.1",
+    "shazamio>=0.8.1",
+    "spotiflac>=0.4.1",
+    "static-ffmpeg>=2.5",
+]
+
+[project.scripts]
+music-vault = "music_vault.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["music_vault*"]
