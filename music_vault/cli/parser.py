@@ -14,6 +14,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     _add_download_parser(sub)
     _add_identify_parser(sub)
+    _add_library_parser(sub)
 
     return parser
 
@@ -41,7 +42,7 @@ def _add_download_parser(sub: argparse._SubParsersAction) -> None:
                    help="Enable verbose SpotiFLAC output.")
 
 
-# ── identify sub-command ──────────────────────────────────────────────────────
+# ── identify sub-command ───────────────────────────────────────────────────────
 
 def _add_identify_parser(sub: argparse._SubParsersAction) -> None:
     p = sub.add_parser(
@@ -70,3 +71,18 @@ def _add_identify_parser(sub: argparse._SubParsersAction) -> None:
                    help="Keep the extracted audio segments even when --download-lossless is set.")
     p.add_argument("--verbose", action="store_true",
                    help="Enable verbose output.")
+
+
+# ── library sub-command ──────────────────────────────────────────────────────
+
+def _add_library_parser(sub: argparse._SubParsersAction) -> None:
+    p = sub.add_parser(
+        "library",
+        help="Scan and maintain your local music library.",
+    )
+    p.add_argument("--path", default="downloads", metavar="DIR",
+                   help="Root directory of the music library (default: downloads).")
+    p.add_argument("--fix", action="store_true",
+                   help="Automatically rename files whose names don't match their tags.")
+    p.add_argument("--dry-run", action="store_true",
+                   help="Show what --fix would do without making any changes.")

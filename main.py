@@ -17,6 +17,7 @@ def main() -> None:
     from music_vault.cli.parser import build_parser
     from music_vault.cli.download_cmd import cmd_download
     from music_vault.cli.identify_cmd import cmd_identify
+    from music_vault.cli.library_cmd import cmd_library
 
     parser = build_parser()
     args   = parser.parse_args()
@@ -25,6 +26,8 @@ def main() -> None:
         cmd_download(args)
     elif args.command == "identify":
         cmd_identify(args)
+    elif args.command == "library":
+        cmd_library(args)
     else:
         parser.print_help()
 
